@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Promptly">
+  <rect width="32" height="32" rx="9" fill="#18231E"/>
+  <!-- One rough idea goes in -->
+  <path d="M1.9 16h8.4" stroke="#F2F8F2" stroke-width="2.1" stroke-linecap="round"/>
+  <!-- The prism -->
+  <path d="M16 6.6 25.4 23.4H6.6Z" fill="none" stroke="#F2F8F2" stroke-width="2.1" stroke-linejoin="round"/>
+  <!-- Three shaped prompts come out: Claude, GPT, Gemini -->
+  <g stroke="#6FB88A" stroke-width="2.1" stroke-linecap="round">
+    <path d="M19.7 11.3 29.3 8.5"/>
+    <path d="M22 15.7h8.1"/>
+    <path d="M24.3 20 30.1 22.6"/>
+  </g>
+</svg>

@@ -1,0 +1,10 @@
+.agent-memory/
+node_modules/
+dist/
+.vercel/
+.env
+.env.local
+*.local
+internal/
+.vercel
+.claude

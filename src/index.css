@@ -1,0 +1,1174 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #f7f8f6;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #eef1ed;
+  --color-ink: #18231e;
+  --color-ink-muted: #68746d;
+  --color-accent: #326b4a;
+  --color-hairline: #dfe6df;
+  --color-danger: #b3261e;
+  --font-sans: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-width: 320px;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  .app-shell {
+    min-height: 100vh;
+    /* dvh tracks the collapsing mobile browser chrome; vh above is the fallback. */
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background:
+      radial-gradient(circle at 85% 0%, rgba(193, 217, 193, 0.38), transparent 32rem),
+      var(--color-canvas);
+  }
+
+  /* One gutter rule for every band, so header, body, and footer stay aligned as the
+     viewport grows. The gutter scales with the viewport instead of stepping at
+     breakpoints. */
+  /* Full bleed. The shell spans the viewport at every size — 14", 28", 45" — and the
+     gutter grows with it. Reading measure is controlled inside each pane instead, so a
+     wide screen buys more workspace rather than longer lines. */
+  .site-header,
+  .site-footer,
+  .main-content {
+    --gutter: clamp(18px, 3.2vw, 64px);
+    width: 100%;
+    padding-inline: var(--gutter);
+  }
+
+  .site-header {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: space-between;
+    /* padding-block only — the shorthand would reset the shared inline gutter to zero. */
+    padding-block: 22px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-ink);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    text-decoration: none;
+  }
+
+  .brand__mark {
+    display: block;
+    width: 30px;
+    height: 30px;
+    flex: none;
+  }
+
+  .header-note,
+  .template-count {
+    color: var(--color-ink-muted);
+    font-size: 13px;
+  }
+
+  .main-content {
+    flex: 1;
+    min-height: 0;
+    padding-block: clamp(28px, 3.5vw, 56px) clamp(48px, 6vw, 80px);
+  }
+
+  /* Two panes: the workspace you type in, and the rail you pick from. Below the
+     breakpoint they stack, composer first, because that is the primary action. */
+  .main-content--split {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(32px, 4vw, 56px);
+  }
+
+  .pane {
+    min-width: 0;
+  }
+
+  .pane--compose .pane__inner {
+    /* Grows with the display, then stops — past this the composer is wider than anyone
+       can read back. Left-aligned so it shares the header's left edge. */
+    max-width: clamp(58rem, 66vw, 82rem);
+  }
+
+  .workspace {
+    max-width: 68rem;
+    margin-inline: auto;
+  }
+
+  .skeleton {
+    display: grid;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .skeleton__line {
+    height: 14px;
+    border-radius: 7px;
+    background: var(--color-surface-sunken);
+  }
+
+  .skeleton__line:nth-child(1) { width: 72%; }
+  .skeleton__line:nth-child(2) { width: 100%; }
+  .skeleton__line:nth-child(3) { width: 84%; }
+
+  .skeleton__chip {
+    display: block;
+    height: 30px;
+    border-radius: 999px;
+    background: var(--color-surface-sunken);
+  }
+
+  .skeleton__card {
+    display: block;
+    min-height: 150px;
+    border: 1px solid var(--color-hairline);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.55);
+  }
+
+  .hero {
+    margin-bottom: clamp(20px, 2.2vw, 30px);
+  }
+
+  .hero h1 {
+    max-width: 15ch;
+    /* 30px floor keeps the headline from overflowing a 320px screen. */
+    font-size: clamp(30px, 4.4vw, 62px);
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+
+  .hero p {
+    max-width: 40ch;
+    margin-top: 16px;
+    color: var(--color-ink-muted);
+    font-size: clamp(15px, 1.15vw, 18px);
+    line-height: 1.55;
+  }
+
+  /* The composer stays within a comfortable typing measure; the template grid below
+     is free to use the whole shell. */
+  /* Rail: templates and recent prompts share one tabbed home, so a generated prompt
+     always reappears in the same place. */
+  .rail {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex-direction: column;
+    border: 1px solid var(--color-hairline);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  /* Initial state: a plain templates header, no tabs. The rail only grows tabs once
+     there is a generated prompt to work with. */
+  .rail__header {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--color-hairline);
+    padding: 16px 18px;
+  }
+
+  .rail__title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .rail--workspace {
+    animation: rise 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .brewing {
+    padding: 8px 4px;
+  }
+
+  .brewing__message {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .brewing__lines {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .brewing__note {
+    margin-top: 20px;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+  }
+
+  .origin {
+    margin-bottom: 22px;
+    border: 1px solid var(--color-hairline);
+    border-radius: 16px;
+    background: var(--color-surface);
+    padding: 16px 18px;
+  }
+
+  .origin__title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .origin__description {
+    margin-top: 6px;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .origin__note {
+    margin-top: 10px;
+    color: var(--color-accent);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .history__preview {
+    overflow: hidden;
+    max-width: 100%;
+    color: var(--color-ink-muted);
+    font-size: 12.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .rail__tabs {
+    display: flex;
+    flex: none;
+    gap: 4px;
+    border-bottom: 1px solid var(--color-hairline);
+    padding: 8px;
+  }
+
+  .rail__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border-radius: 12px;
+    padding: 9px 14px;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    font-weight: 700;
+    transition: 160ms ease;
+  }
+
+  .rail__tab:hover {
+    color: var(--color-ink);
+  }
+
+  .rail__tab.is-active {
+    background: var(--color-surface-sunken);
+    color: var(--color-ink);
+  }
+
+  .rail__count {
+    border-radius: 999px;
+    background: var(--color-surface-sunken);
+    padding: 1px 7px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rail__tab.is-active .rail__count {
+    background: var(--color-ink);
+    color: #e9f4e9;
+  }
+
+  .rail__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    /* Bottom padding clears the fade height, so at the end of the list the gradient
+       falls over empty space instead of dimming the last card. */
+    padding: 16px 16px 48px;
+    /* With the scrollbar hidden, this soft bottom edge is the only cue that the list
+       continues. Masking the content rather than overlaying a gradient keeps it correct
+       over the rail's translucent background. */
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent);
+  }
+
+  /* Scroll without the chrome. Wheel, trackpad, touch and keyboard all still work;
+     only the painted bar goes. */
+  .rail__body,
+  .pane--compose,
+  .main-content--full {
+    scrollbar-width: none;
+  }
+
+  .rail__body::-webkit-scrollbar,
+  .pane--compose::-webkit-scrollbar,
+  .main-content--full::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .rail__empty {
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .chat-composer {
+    overflow: hidden;
+    border: 1px solid var(--color-hairline);
+    border-radius: 24px;
+    background: var(--color-surface);
+    box-shadow: 0 18px 55px rgba(36, 63, 45, 0.1);
+  }
+
+  .chat-composer__input {
+    display: block;
+    width: 100%;
+    min-height: 168px;
+    resize: vertical;
+    border: 0;
+    background: transparent;
+    padding: 24px 26px;
+    color: var(--color-ink);
+    font-size: 18px;
+    line-height: 1.55;
+    outline: none;
+  }
+
+  .chat-composer__input::placeholder {
+    color: #98a39b;
+  }
+
+  .chat-composer__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    border-top: 1px solid var(--color-hairline);
+    padding: 14px 16px 14px 20px;
+  }
+
+  .provider-switcher,
+  .category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .provider-chip,
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    border-radius: 999px;
+    padding: 8px 12px;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    font-weight: 700;
+    transition: 160ms ease;
+  }
+
+  .provider-mark {
+    flex: none;
+    opacity: 0.5;
+    transition: 160ms ease;
+  }
+
+  .provider-chip.is-selected .provider-mark,
+  .provider-card.is-selected .provider-mark {
+    opacity: 1;
+  }
+
+  /* The glyph is the syntax that provider's prompt is actually built from. */
+  .provider-chip__glyph {
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: -0.04em;
+    opacity: 0.5;
+    transition: 160ms ease;
+  }
+
+  .provider-chip.is-selected .provider-chip__glyph {
+    opacity: 1;
+  }
+
+  .provider-card__hint .provider-chip__glyph {
+    margin-right: 6px;
+    opacity: 1;
+  }
+
+  .provider-chip.is-selected .provider-chip__glyph {
+    opacity: 1;
+  }
+
+  .provider-chip input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .provider-chip.is-selected,
+  .filter-chip.is-active {
+    background: var(--color-surface-sunken);
+    color: var(--color-ink);
+  }
+
+  .provider-chip:hover,
+  .filter-chip:hover {
+    color: var(--color-ink);
+  }
+
+  .generate-button,
+  .copy-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-ink);
+    padding: 12px 18px;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    transition: 160ms ease;
+  }
+
+  .generate-button:hover:not(:disabled) {
+    background: var(--color-accent);
+    transform: translateY(-1px);
+  }
+
+  /* Secondary: Generate is the primary action on the page, so Copy stays quiet at rest
+     and only commits to the dark treatment on hover. */
+  .copy-button {
+    border: 1px solid var(--color-hairline);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .copy-button:hover {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    color: #e9f4e9;
+    transform: translateY(-1px);
+  }
+
+  .copy-button__icon {
+    flex: none;
+  }
+
+  .generate-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+  }
+
+  .template-section {
+    margin-top: 100px;
+  }
+
+  .template-section__heading,
+  .output-panel__heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .template-section h2,
+  .form-heading,
+  .output-panel__title {
+    margin-top: 8px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.045em;
+  }
+
+  .category-filter {
+    margin-top: 24px;
+  }
+
+  .filter-chip {
+    border: 1px solid var(--color-hairline);
+    background: var(--color-surface);
+  }
+
+  /* auto-fill sizes the column count to the available width, so the grid goes
+     1 → 2 → 3 → 4 columns on its own without a breakpoint for each step. */
+  .template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .template-card {
+    display: flex;
+    min-height: 150px;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    border: 1px solid var(--color-hairline);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.74);
+    padding: 20px;
+    text-align: left;
+    transition: 180ms ease;
+  }
+
+  .template-card:hover {
+    border-color: #b5cdb9;
+    background: var(--color-surface);
+    box-shadow: 0 12px 30px rgba(36, 63, 45, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .template-card__title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .template-card__description {
+    margin-top: 8px;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .template-card__category {
+    margin-top: auto;
+    padding-top: 14px;
+    color: var(--color-accent);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .form-card {
+    margin-top: 30px;
+    border: 1px solid var(--color-hairline);
+    border-radius: 24px;
+    background: var(--color-surface);
+    padding: clamp(22px, 5vw, 38px);
+    box-shadow: 0 18px 55px rgba(36, 63, 45, 0.08);
+  }
+
+  .back-button {
+    color: var(--color-ink-muted);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .back-button:hover {
+    color: var(--color-ink);
+  }
+
+  .form-description,
+  .form-help {
+    margin-top: 8px;
+    color: var(--color-ink-muted);
+    font-size: 14px;
+  }
+
+  /* Short fields pair up once there is room; textareas keep the full row. */
+  .form-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 24px;
+  }
+
+  .form-field--wide {
+    grid-column: 1 / -1;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .optional-label {
+    margin-left: 8px;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  .field-control {
+    margin-top: 8px;
+  }
+
+  .form-input {
+    width: 100%;
+    border: 1px solid var(--color-hairline);
+    border-radius: 12px;
+    background: #fbfcfa;
+    padding: 12px 14px;
+    color: var(--color-ink);
+    /* Must stay >= 16px: iOS Safari zooms the viewport on focus below that. */
+    font-size: 16px;
+    outline: none;
+    transition: 160ms ease;
+  }
+
+  .form-input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(50, 107, 74, 0.12);
+  }
+
+  .field-error,
+  .inline-error {
+    margin-top: 10px;
+    color: var(--color-danger);
+    font-size: 14px;
+  }
+
+  .provider-fieldset {
+    margin-top: 34px;
+    border: 0;
+    padding: 0;
+  }
+
+  .provider-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .provider-card {
+    cursor: pointer;
+    border: 1px solid var(--color-hairline);
+    border-radius: 14px;
+    background: var(--color-surface-sunken);
+    padding: 14px;
+    transition: 160ms ease;
+  }
+
+  .provider-card.is-selected {
+    border-color: var(--color-accent);
+    background: #f2f8f2;
+  }
+
+  .provider-card__topline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .provider-card__label {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .provider-card__hint {
+    display: block;
+    margin-top: 6px;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .form-card .generate-button {
+    margin-top: 32px;
+  }
+
+  .output-panel {
+    margin-top: 48px;
+    border-top: 1px solid var(--color-hairline);
+    padding-top: 28px;
+  }
+
+  .output-panel__prompt {
+    overflow-x: auto;
+    margin-top: 20px;
+    border-radius: 18px;
+    background: var(--color-ink);
+    padding: 22px;
+    color: #e8f3e8;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  .sources-list {
+    margin-top: 22px;
+  }
+
+  .sources-list h3 {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .sources-list ul {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .sources-list li {
+    font-size: 14px;
+  }
+
+  .sources-list a {
+    color: var(--color-accent);
+    /* Source titles and URLs can be long enough to push the page sideways. */
+    overflow-wrap: anywhere;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .history {
+    margin-top: 44px;
+  }
+
+  .history__heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .history__heading h2 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .history__clear {
+    color: var(--color-ink-muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .history__clear:hover {
+    color: var(--color-danger);
+  }
+
+  .history__note {
+    margin-top: 4px;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+  }
+
+  .history__list {
+    display: grid;
+    /* minmax(0,1fr) — an auto track would size to the label's min-content, and the
+       label is nowrap, so the row would grow to the full untruncated string. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .history__item {
+    display: flex;
+    min-width: 0;
+    align-items: stretch;
+    gap: 6px;
+    border: 1px solid var(--color-hairline);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.74);
+    transition: 160ms ease;
+  }
+
+  .history__item:hover {
+    border-color: #b5cdb9;
+    background: var(--color-surface);
+  }
+
+  /* The rail is narrow at every width, so the label gets its own line and the meta sits
+     beneath it. Stacking beats truncating both halves of the row. */
+  .history__restore {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    padding: 11px 14px;
+    text-align: left;
+  }
+
+  .history__label {
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .history__meta {
+    flex: none;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+  }
+
+  .history__remove {
+    flex: none;
+    padding: 0 15px;
+    color: var(--color-ink-muted);
+    font-size: 19px;
+    line-height: 1;
+  }
+
+  .history__remove:hover {
+    color: var(--color-danger);
+  }
+
+  .chat-composer__consent {
+    border-top: 1px solid var(--color-hairline);
+    padding: 12px 16px 14px 20px;
+  }
+
+  .consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--color-ink-muted);
+    font-size: 13px;
+  }
+
+  .consent input {
+    margin-top: 2px;
+    flex: none;
+    accent-color: var(--color-accent);
+  }
+
+  .consent:hover {
+    color: var(--color-ink);
+  }
+
+  .consent__detail {
+    display: block;
+    margin-top: 2px;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .form-card .consent {
+    margin-top: 28px;
+  }
+
+  .loading-copy {
+    color: var(--color-ink-muted);
+    font-size: 14px;
+  }
+
+  .site-footer {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    border-top: 1px solid var(--color-hairline);
+    padding-block: 14px 16px;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+  }
+
+  .site-footer__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-ink);
+    font-weight: 700;
+  }
+
+  .site-footer__version {
+    border-radius: 999px;
+    background: var(--color-surface-sunken);
+    padding: 2px 8px;
+    color: var(--color-ink-muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .site-footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+
+  .site-footer__links a {
+    color: var(--color-ink-muted);
+    text-decoration: none;
+    transition: 160ms ease;
+  }
+
+  .site-footer__links a:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .recall {
+    border: 1px solid var(--color-hairline);
+    border-radius: 18px;
+    background: var(--color-surface);
+    padding: 18px 20px;
+  }
+
+  /* Sitting above the prompt, it needs the gap below it rather than above. */
+  .rail__body .recall {
+    margin-bottom: 4px;
+  }
+
+  /* The output panel's top rule is redundant once the request sits directly above it. */
+  .rail__body .output-panel {
+    margin-top: 24px;
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .recall__heading {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  .recall__request {
+    margin-top: 10px;
+    color: var(--color-ink);
+    font-size: 15px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  .recall__request--missing {
+    color: var(--color-ink-muted);
+    font-style: italic;
+  }
+
+  .recall__reuse {
+    margin-top: 16px;
+    border-radius: 999px;
+    background: var(--color-surface-sunken);
+    padding: 9px 16px;
+    color: var(--color-ink);
+    font-size: 13px;
+    font-weight: 700;
+    transition: 160ms ease;
+  }
+
+  .recall__reuse:hover {
+    background: var(--color-ink);
+    color: #e9f4e9;
+  }
+}
+
+/* Desktop: the app owns the viewport. Header and footer stay put, the two panes scroll
+   independently, so a tall template list never pushes the composer off screen. */
+@media (min-width: 1080px) {
+  .app-shell {
+    height: 100dvh;
+  }
+
+  .main-content {
+    overflow: hidden;
+    /* Tight: the footer is pinned, so bottom padding here is dead space, not breathing room. */
+    padding-block: clamp(20px, 2vw, 34px) clamp(16px, 1.6vw, 26px);
+  }
+
+  /* The rail is wide enough to hold two template cards per row; the composer keeps
+     the rest. */
+  .main-content--split {
+    grid-template-columns: minmax(0, 1fr) clamp(24rem, 32vw, 44rem);
+  }
+
+  .main-content--full,
+  .pane--compose {
+    overflow-y: auto;
+  }
+
+  .pane--rail {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  /* Headline and standfirst sit side by side so the top of the page is a band, not a
+     narrow column with a void beside it. */
+  .hero {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    column-gap: clamp(28px, 3vw, 56px);
+  }
+
+  .hero p {
+    margin-top: 0;
+    padding-bottom: 6px;
+  }
+
+  /* The composer grows into the height available rather than leaving a gap above the footer. */
+  .chat-composer__input {
+    min-height: clamp(200px, 42vh, 460px);
+  }
+}
+
+/* Very large displays: the prompt sits beside what you typed instead of below it, so
+   the extra width becomes a working view rather than empty margin. */
+@media (min-width: 2200px) {
+  .pane--compose .pane__inner {
+    display: grid;
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    column-gap: clamp(40px, 3vw, 72px);
+  }
+
+  .pane--compose .pane__inner > * {
+    grid-column: 1;
+  }
+
+  .pane--compose .pane__inner > .output-panel {
+    grid-column: 2;
+    grid-row: 1 / span 6;
+    margin-top: 0;
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
+/* Tablet and below: the header note is the first thing worth losing. */
+@media (max-width: 860px) {
+  .header-note {
+    display: none;
+  }
+
+  .template-section {
+    margin-top: 64px;
+  }
+}
+
+/* Phones. The grids collapse on their own via auto-fill, so this block only handles
+   what intrinsic sizing cannot: stacking rows and widening tap targets. */
+@media (max-width: 640px) {
+  .site-footer span:nth-child(2) {
+    display: none;
+  }
+
+  .chat-composer__footer,
+  .template-section__heading,
+  .output-panel__heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .output-panel__heading,
+  .template-section__heading {
+    gap: 14px;
+  }
+
+  .generate-button,
+  .copy-button {
+    width: 100%;
+    padding: 14px 18px;
+  }
+
+  .chat-composer__input {
+    min-height: 148px;
+    padding: 18px 18px;
+  }
+
+  .chat-composer__footer {
+    padding: 14px;
+  }
+
+  .output-panel__prompt {
+    padding: 18px 16px;
+    font-size: 12.5px;
+  }
+
+  .site-footer {
+    flex-wrap: wrap;
+  }
+}
+
+/* Touch devices at any width: 44px is the smallest comfortable target. */
+@media (pointer: coarse) {
+  .filter-chip,
+  .provider-chip {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 16px;
+  }
+
+  .back-button {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+  }
+}
+
+@layer utilities {
+  .animate-rise {
+    animation: rise 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
