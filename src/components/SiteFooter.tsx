@@ -1,5 +1,5 @@
 /** Set this to the real repository before shipping. */
-const GITHUB_URL = "https://github.com/your-username/promptly";
+const GITHUB_URL = "https://github.com/yashjadwani/Promptly";
 
 export const APP_VERSION = "v1.0";
 
