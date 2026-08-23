@@ -38,8 +38,28 @@ That runs everything **locally** on `localhost:3000` — nothing is deployed.
 ## Before shipping
 
 - **Set `GITHUB_URL` in `src/components/SiteFooter.tsx`** — it is a placeholder, and three footer links depend on it.
+- **Set `VITE_SITE_URL` in the Vercel project's environment variables**, not just `.env`. It is a build-time substitution, so a deployment without it ships broken canonical and Open Graph URLs.
+- Confirm the link preview renders once deployed — paste the URL into X or LinkedIn's post composer, or Slack.
 - Replace the provider marks in `src/components/ProviderMark.tsx` with official assets if the app goes public (see below).
 - Run the checks in `internal/SHIP.md`.
+
+## SEO
+
+`index.html` carries the title, description, canonical, Open Graph, Twitter card, and a `WebApplication` JSON-LD block. Site-absolute URLs come from `VITE_SITE_URL`, substituted by Vite at build time — one variable, no hardcoded domain.
+
+`#root` ships a short, accurate summary that React replaces on mount, so a crawler that does not execute JavaScript still reads what the page is. Keep it truthful if you edit it; it must match what the app actually claims.
+
+`public/robots.txt` allows everything except `/api/`, which returns JSON, is rate-limited per IP, and indexes nothing useful.
+
+No sitemap: this is a single URL, and a one-entry sitemap tells a crawler nothing the canonical tag has not already said.
+
+**Social card.** `public/promptly.svg` is the source; `public/promptly.png` (1200×630) is what the meta tags reference. X, Facebook, LinkedIn and Slack do not render SVG in link previews, so the PNG is not optional — pointing the tags at the SVG produces a blank preview everywhere. If you edit the SVG, re-export it:
+
+```bash
+npx svgexport public/promptly.svg public/promptly.png 1200:630
+```
+
+**Keyword note.** "Promptly" is used by several existing products, so brand-name search is not winnable. The title and description therefore lead with the task — *prompt generator for Claude, GPT and Gemini* — which is what people actually search for.
 
 ## What's in it
 

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# The API returns JSON and has a per-IP rate limit; crawling it wastes quota
+# and indexes nothing useful.
+Disallow: /api/

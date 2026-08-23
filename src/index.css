@@ -51,6 +51,9 @@
   /* Full bleed. The shell spans the viewport at every size — 14", 28", 45" — and the
      gutter grows with it. Reading measure is controlled inside each pane instead, so a
      wide screen buys more workspace rather than longer lines. */
+  /* One gutter for all three bands. The footer joins it so the brand sits under the
+     header logo at every width — a footer on its own tighter padding drifts out of
+     alignment as the viewport grows. */
   .site-header,
   .site-footer,
   .main-content {
@@ -896,54 +899,6 @@
     font-size: 14px;
   }
 
-  .site-footer {
-    display: flex;
-    flex: none;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px 24px;
-    border-top: 1px solid var(--color-hairline);
-    padding-block: 14px 16px;
-    color: var(--color-ink-muted);
-    font-size: 12px;
-  }
-
-  .site-footer__brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--color-ink);
-    font-weight: 700;
-  }
-
-  .site-footer__version {
-    border-radius: 999px;
-    background: var(--color-surface-sunken);
-    padding: 2px 8px;
-    color: var(--color-ink-muted);
-    font-size: 11px;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .site-footer__links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-  }
-
-  .site-footer__links a {
-    color: var(--color-ink-muted);
-    text-decoration: none;
-    transition: 160ms ease;
-  }
-
-  .site-footer__links a:hover {
-    color: var(--color-accent);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
   .recall {
     border: 1px solid var(--color-hairline);
     border-radius: 18px;
@@ -1087,10 +1042,6 @@
 /* Phones. The grids collapse on their own via auto-fill, so this block only handles
    what intrinsic sizing cannot: stacking rows and widening tap targets. */
 @media (max-width: 640px) {
-  .site-footer span:nth-child(2) {
-    display: none;
-  }
-
   .chat-composer__footer,
   .template-section__heading,
   .output-panel__heading {
@@ -1123,9 +1074,6 @@
     font-size: 12.5px;
   }
 
-  .site-footer {
-    flex-wrap: wrap;
-  }
 }
 
 /* Touch devices at any width: 44px is the smallest comfortable target. */

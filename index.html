@@ -3,13 +3,83 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- The site-URL token below is substituted by Vite at build time from VITE_SITE_URL. -->
+    <title>Promptly — Prompt Generator for Claude, GPT &amp; Gemini</title>
+    <meta
+      name="description"
+      content="Describe what you want in plain language and get a ready-to-use prompt written for Claude, GPT, or Gemini. Free, no sign-up, nothing stored on a server."
+    />
+    <link rel="canonical" href="%VITE_SITE_URL%/" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="theme-color" content="#f7f8f6" />
-    <title>Promptly</title>
-    <meta name="description" content="Turn a short form into a prompt built for Claude, GPT, or Gemini." />
+    <meta name="color-scheme" content="light" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Promptly" />
+    <meta property="og:url" content="%VITE_SITE_URL%/" />
+    <meta property="og:title" content="Promptly — Prompt Generator for Claude, GPT &amp; Gemini" />
+    <meta
+      property="og:description"
+      content="Describe what you want in plain language and get a ready-to-use prompt written for Claude, GPT, or Gemini. Free, no sign-up."
+    />
+    <meta property="og:image" content="%VITE_SITE_URL%/promptly.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Promptly — generates and refines prompts for other AI tools."
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Promptly — Prompt Generator for Claude, GPT &amp; Gemini" />
+    <meta
+      name="twitter:description"
+      content="Describe what you want in plain language and get a prompt written for the assistant you name. Free, no sign-up."
+    />
+    <meta name="twitter:image" content="%VITE_SITE_URL%/promptly.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Promptly",
+        "url": "%VITE_SITE_URL%/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Any",
+        "description": "Turns a plain-language description into a prompt written for Claude, GPT, or Gemini.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "featureList": [
+          "Prompts tailored to Claude, GPT and Gemini conventions",
+          "Ten ready-made prompt templates",
+          "Free-form prompt generation",
+          "Prompt history kept in the browser",
+          "No account required"
+        ]
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      React replaces this on mount. It exists so a crawler that does not run JavaScript
+      still reads an accurate summary of the page — the same claims the app itself makes.
+    -->
+    <div id="root">
+      <h1>Promptly — prompt generator for Claude, GPT and Gemini</h1>
+      <p>
+        Describe what you want to make in plain language. Promptly writes a prompt using the
+        conventions of the assistant you name — XML sections for Claude, direct Markdown
+        instructions for GPT, front-loaded context for Gemini — and you paste it in yourself.
+      </p>
+      <p>
+        Ten templates cover marketing copy, professional email, social posts, code review, research
+        summaries, brainstorming, technical explainers, product briefs, meeting agendas and data
+        analysis. No account, no sign-up, and nothing you type is stored on a server unless you ask
+        for it.
+      </p>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

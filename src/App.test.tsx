@@ -464,23 +464,112 @@ describe("recent", () => {
   it("says where prompts are kept", async () => {
     await generateThenOpenRecent();
     expect(screen.getByText(/Kept in this browser only/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/stay in your browser unless you tick the save box/),
-    ).toBeInTheDocument();
   });
 });
 
 describe("footer", () => {
-  it("carries the version and working links on every screen", async () => {
+  async function renderApp() {
     mockCatalog([MARKETING, CODE_REVIEW]);
+    const user = userEvent.setup();
     render(<App />);
+    await screen.findByRole("button", { name: /Marketing Copy/ });
+    return user;
+  }
 
-    expect(await screen.findByText("v1.0")).toBeInTheDocument();
-    const github = screen.getByRole("link", { name: "GitHub" });
-    expect(github).toHaveAttribute("href", expect.stringContaining("github.com"));
-    expect(github).toHaveAttribute("rel", expect.stringContaining("noopener"));
-    expect(screen.getByRole("link", { name: /Request a template/ })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /^Add a template$/ })).not.toBeInTheDocument();
+  it("shows the wordmark with the last two letters accented, and the major.minor version", async () => {
+    await renderApp();
+
+    expect(screen.getByText("v1.0")).toBeInTheDocument();
+    // "Prompt" + "ly", where "ly" carries the accent colour.
+    expect(screen.getByText("ly")).toBeInTheDocument();
+    expect(screen.getByText("Prompt")).toBeInTheDocument();
+  });
+
+  it("opens the box links in a new tab", async () => {
+    await renderApp();
+
+    for (const name of ["GitHub", "Docs"]) {
+      const link = screen.getByRole("link", { name });
+      expect(link).toHaveAttribute("target", "_blank");
+      // noreferrer implies noopener, so this is not a tabnabbing hole.
+      expect(link).toHaveAttribute("rel", "noreferrer");
+      expect(link).toHaveAttribute("href", expect.stringContaining("github.com"));
+    }
+  });
+
+  it("keeps the privacy claim visible, not only inside the dialog", async () => {
+    await renderApp();
+    expect(
+      screen.getByText(/Your prompts stay in your browser unless you tick the save box/),
+    ).toBeInTheDocument();
+  });
+
+  it("shares the page gutter so the brand lines up with the header", async () => {
+    const { container } = (() => {
+      mockCatalog([MARKETING, CODE_REVIEW]);
+      return render(<App />);
+    })();
+    await screen.findByRole("button", { name: /Marketing Copy/ });
+
+    const footer = container.querySelector("footer");
+    // The shared rule supplies padding-inline; a local px-* utility would override it
+    // and pull the footer out of alignment.
+    expect(footer).toHaveClass("site-footer");
+    expect(footer?.className).not.toMatch(/(^|\s)px-\d/);
+  });
+
+  it("points Feedback at a new issue", async () => {
+    await renderApp();
+    expect(screen.getByRole("link", { name: "Feedback" })).toHaveAttribute(
+      "href",
+      expect.stringContaining("/issues/new"),
+    );
+  });
+
+  it("opens Methodology as a dialog, not a route", async () => {
+    const user = await renderApp();
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Methodology" }));
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText(/How Promptly works/)).toBeInTheDocument();
+    // Still the same page underneath.
+    expect(screen.getByLabelText(/What do you want to create/)).toBeInTheDocument();
+  });
+
+  it("states the privacy position in its dialog", async () => {
+    const user = await renderApp();
+    await user.click(screen.getByRole("button", { name: "Privacy" }));
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText(/no accounts, no sign-up and no tracking/i)).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/Nothing you type is stored on a server unless you tick the save box/i),
+    ).toBeInTheDocument();
+  });
+
+  it("closes on the Close button", async () => {
+    const user = await renderApp();
+    await user.click(screen.getByRole("button", { name: "Privacy" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Close" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("closes on a backdrop click but not on a click inside", async () => {
+    const user = await renderApp();
+    await user.click(screen.getByRole("button", { name: "Methodology" }));
+    const dialog = screen.getByRole("dialog");
+
+    // Clicking the content must not dismiss it.
+    await user.click(within(dialog).getByRole("heading", { name: /How Promptly works/ }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    // The backdrop is the dialog element itself.
+    await user.click(dialog);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
 
