@@ -41,17 +41,6 @@ export function compilerChain(): CompilerHop[] {
       model: optional("OPENROUTER_LLM_FALLBACK", "google/gemma-4-26b-a4b-it:free"),
     },
   ];
-
-  const opencodeKey = process.env.OPENCODE_API_KEY;
-  if (opencodeKey) {
-    chain.push({
-      label: "opencode-zen",
-      baseUrl: optional("OPENCODE_BASE_URL", "https://opencode.ai/zen/v1"),
-      apiKey: opencodeKey,
-      model: optional("OPENCODE_MODEL", "deepseek-v4-flash-free"),
-    });
-  }
-
   return chain;
 }
 
